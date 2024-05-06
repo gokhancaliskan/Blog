@@ -1,4 +1,4 @@
-import React from "react";
+import Image from "next/image";
 
 type Post = {
   _id: string;
@@ -16,9 +16,12 @@ export const Card = ({ posts }: CardProps) => {
     <div className="flex justify-center">
       <ul className="space-y-[1.5rem]">
         {posts.map((post) => (
-          <div className=" card w-96 bg-base-100 shadow-xl image-full">
+          <div
+            className=" card w-96 bg-base-100 shadow-xl image-full"
+            key={post._id}
+          >
             <figure>
-              <img src={post.image} alt="Shoes" />
+              <Image src={post.image} alt="Shoes" />
             </figure>
             <div className="card-body">
               <h2 className="card-title">{post.title}</h2>
