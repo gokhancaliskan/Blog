@@ -1,5 +1,5 @@
 // pages/admin.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 
 const AdminPage = () => {
   const [posts, setPosts] = useState([]);
@@ -9,7 +9,7 @@ const AdminPage = () => {
   const [category, setCategory] = useState("");
   const [image, setImage] = useState("");
   const [content, setContent] = useState("");
-  const [price, setPrice] = useState(0);
+  const [price, setPrice] = useState("");
   const [number, setNumber] = useState(0);
 
   useEffect(() => {
@@ -67,8 +67,8 @@ const AdminPage = () => {
     setCategory("");
     setImage("");
     setContent("");
-    setPrice(0);
-    setNumber(0);
+    setPrice("");
+    setNumber(number);
   };
   console.log(main);
   const deletePost = async (id: string) => {
@@ -156,9 +156,7 @@ const AdminPage = () => {
         <input
           type="number"
           value={price}
-          onChange={(e) =>
-            setPrice(parseInt(e.target.value))
-          }
+          onChange={(e) => setPrice(e.target.value)}
           placeholder="Fiyat"
           className="w-full p-2 border bg-base-100 rounded mt-2"
           required
@@ -169,7 +167,6 @@ const AdminPage = () => {
           onChange={(e) =>
             setNumber(parseInt(e.target.value))
           }
-          placeholder="Sıra Numarası"
           className="w-full p-2 border bg-base-100 rounded mt-2"
           required
         />
@@ -185,7 +182,7 @@ const AdminPage = () => {
         <label className="form-control w-full max-w-xs">
           <input
             type="text"
-            placeholder="Type here"
+            placeholder="Ürün Ara"
             className="input input-bordered w-full max-w-xs"
             onChange={handleSearchChange}
           />
@@ -195,32 +192,51 @@ const AdminPage = () => {
           {posts
             .filter(
               (post: { _id: string; title: string }) =>
-                post.title.includes(searchTerm)
+                post.title
+                  .toLowerCase()
+                  .includes(searchTerm)
             )
-            .map((post: { _id: string; title: string }) => (
-              <li
-                key={post._id}
-                className="flex justify-between items-center bg-gray-100 px-4 py-2 rounded shadow-sm mt-2"
-              >
-                <span className="font-medium">
-                  {post.title}
-                </span>
-                <div>
-                  <button
-                    onClick={() => startEdit(post)}
-                    className="text-sm bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded mr-2"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => deletePost(post._id)}
-                    className="text-sm bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
+            .map(
+              (post: {
+                category: ReactNode;
+                main: string;
+                number: number;
+                _id: string;
+                title: string;
+              }) => (
+                <li
+                  key={post._id}
+                  className="flex justify-between items-center bg-gray-100 px-4 py-2 rounded shadow-sm mt-2"
+                >
+                  <span className="font-medium">
+                    {post.number}
+                  </span>
+                  <span className="font-medium">
+                    {post.main}
+                  </span>
+                  <span className="font-medium">
+                    {post.category}
+                  </span>
+                  <span className="font-medium">
+                    {post.title}
+                  </span>
+                  <div>
+                    <button
+                      onClick={() => startEdit(post)}
+                      className="text-sm bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded mr-2"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deletePost(post._id)}
+                      className="text-sm bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </li>
+              )
+            )}
         </ul>
       </div>
     </div>
