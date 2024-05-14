@@ -21,8 +21,15 @@ async function handler(
       break;
 
     case "POST":
-      const { title, main, category, image, content } =
-        req.body;
+      const {
+        title,
+        main,
+        category,
+        image,
+        content,
+        price,
+        number,
+      } = req.body;
       const result = await db
         .collection("posts")
         .insertOne({
@@ -31,6 +38,8 @@ async function handler(
           category,
           image,
           content,
+          price,
+          number,
         });
       res.status(201).json({
         message: "Post added successfully",

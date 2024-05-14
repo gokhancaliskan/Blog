@@ -13,14 +13,29 @@ async function handler(
   const db = client.db();
 
   if (req.method === "PUT") {
-    const { title, main, category, image, content } =
-      req.body;
-    await db
-      .collection("posts")
-      .updateOne(
-        { _id: new ObjectId(id as string) },
-        { $set: { title, main, category, image, content } }
-      );
+    const {
+      title,
+      main,
+      category,
+      image,
+      content,
+      price,
+      number,
+    } = req.body;
+    await db.collection("posts").updateOne(
+      { _id: new ObjectId(id as string) },
+      {
+        $set: {
+          title,
+          main,
+          category,
+          image,
+          content,
+          price,
+          number,
+        },
+      }
+    );
     res
       .status(200)
       .json({ message: "Post updated successfully" });
