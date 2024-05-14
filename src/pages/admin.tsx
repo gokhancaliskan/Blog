@@ -67,7 +67,7 @@ const AdminPage = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       <p className="text-blue-500 font-semibold">
-        Menu Ürünler
+        Menü Ürünler
       </p>
       <form
         onSubmit={submitHandler}
