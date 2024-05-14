@@ -15,7 +15,7 @@ const Home: NextPage<HomeProps> = ({ posts }) => {
 export const getServerSideProps: GetServerSideProps =
   async () => {
     const res = await fetch(
-      "https://coffeefairytale.vercel.app/api/posts"
+      "https://coffeefairytale-git-main-gokhancaliskans-projects.vercel.app//api/posts"
     );
     const posts = await res.json();
     return {
