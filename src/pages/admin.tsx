@@ -5,7 +5,7 @@ const AdminPage = () => {
   const [posts, setPosts] = useState([]);
   const [editingPost, setEditingPost] = useState(null);
   const [title, setTitle] = useState("");
-  const [main, setMain] = useState("");
+  const [main, setMain] = useState("hediyelik");
   const [category, setCategory] = useState("");
   const [image, setImage] = useState("");
   const [content, setContent] = useState("");
@@ -109,10 +109,9 @@ const AdminPage = () => {
           className="select w-full p-2 border border-gray-300 rounded mt-2"
           required
         >
-          <option value="a">Ürün Tipi Seçiniz</option>
+          <option value="hediyelik">Hediyelik</option>
           <option value="içecek">İçecek</option>
           <option value="yemek">Yemek</option>
-          <option value="hediyelik">Hediyelik</option>
         </select>
         {main === "içecek" ? (
           <select
