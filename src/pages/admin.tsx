@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect } from "react";
 
 const AdminPage = () => {
   const [posts, setPosts] = useState([]);
@@ -6,24 +6,31 @@ const AdminPage = () => {
   const [title, setTitle] = useState("");
   const [main, setMain] = useState("hediyelik");
   const [category, setCategory] = useState("");
-  const [image, setImage] = useState("");
+  const [image, setImage] = useState(
+    "https://r.resimlink.com/jz08F76.png"
+  );
   const [content, setContent] = useState("");
   const [price, setPrice] = useState("");
   const [number, setNumber] = useState(0);
-  const [error, setError] = useState<string | null>(null); // Yeni eklenen hata durumu
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetch("/api/posts")
       .then((response) => response.json())
-      .then(setPosts);
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setPosts(data);
+        } else {
+          setError("Beklenmeyen veri yapısı");
+        }
+      })
+      .catch((err) =>
+        setError(
+          "Veri alınırken hata oluştu: " + err.message
+        )
+      );
   }, []);
-
-  const handleSearchChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setSearchTerm(event.target.value);
-  };
 
   const startEdit = (post: any) => {
     setEditingPost(post);
@@ -38,7 +45,7 @@ const AdminPage = () => {
 
   const submitHandler = async (event: any) => {
     event.preventDefault();
-    setError(null); // Hata durumunu sıfırlayın
+    setError(null);
 
     const url = editingPost
       ? `/api/posts/${(editingPost as any)._id}`
@@ -63,7 +70,7 @@ const AdminPage = () => {
 
     if (!response.ok) {
       const data = await response.json();
-      setError(data.message); // Hata mesajını ayarlayın
+      setError(data.message);
     } else {
       const data = await response.json();
       setEditingPost(null);
@@ -74,7 +81,21 @@ const AdminPage = () => {
       setContent("");
       setPrice("");
       setNumber(0);
-      setPosts(data); // Yeni post listesini ayarlayın
+
+      // Burada, mevcut posts durumunu güncelleyip yeni veriyi ekliyoruz.
+      setPosts((prevPosts) => {
+        if (editingPost) {
+          // Mevcut bir gönderiyi düzenliyorsanız, güncellenmiş gönderiyi diziye ekleyin.
+          return prevPosts.map((post) =>
+            post._id === (editingPost as any)._id
+              ? data
+              : post
+          );
+        } else {
+          // Yeni bir gönderi ekliyorsanız, yeni gönderiyi diziye ekleyin.
+          return [...prevPosts, data];
+        }
+      });
     }
   };
 
@@ -87,192 +108,227 @@ const AdminPage = () => {
     );
   };
 
+  const handleSearchChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setSearchTerm(event.target.value.toLowerCase());
+  };
+
   return (
-    <div className="w-screen h-screen items-center flex p-4 gap-2">
+    <div className="min-h-screen flex flex-col items-center p-4 bg-gray-100">
       <form
         onSubmit={submitHandler}
-        className="w-1/2 bg-white shadow-md rounded-lg p-4"
+        className="w-full max-w-xl bg-white shadow-lg rounded-lg p-6 mb-6"
       >
-        {error && <p className="text-red-500">{error}</p>}
-        <p className="text-blue-500 font-bold ">
-          Ürün Adı{" "}
-          {error && <p className="text-red-500">{error}</p>}
-        </p>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Ürün adı"
-          className="w-full p-2 border bg-base-100 rounded mt-2"
-          required
-        />
-        <br />
-        <p className="text-blue-500 font-bold ">
-          Ürün Tipi
-        </p>
-        <select
-          value={main}
-          onChange={(e) => setMain(e.target.value)}
-          className="select w-full p-2 border border-gray-300 rounded mt-2"
-          required
-        >
-          <option value="hediyelik">Hediyelik</option>
-          <option value="içecek">İçecek</option>
-          <option value="yemek">Yemek</option>
-        </select>
-        {main === "içecek" ? (
+        {error && (
+          <p className="text-red-500 mb-4">{error}</p>
+        )}
+        <div className="form-control mb-4">
+          <label className="label text-blue-500 font-bold">
+            Ürün Adı
+          </label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Ürün adı"
+            className="input input-bordered w-full"
+            required
+          />
+        </div>
+        <div className="form-control mb-4">
+          <label className="label text-blue-500 font-bold">
+            Ürün Tipi
+          </label>
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="select w-full p-2 border border-gray-300 rounded mt-2"
+            value={main}
+            onChange={(e) => setMain(e.target.value)}
+            className="select select-bordered w-full"
             required
           >
-            <option value="a">Kategori Seçiniz</option>
-            <option value="çay">Çaylar</option>
-            <option value="sıcakkahve">
-              Sıcak Kahveler
-            </option>
-            <option value="sogukkahve">
-              Soğuk Kahveler
-            </option>
+            <option value="hediyelik">Hediyelik</option>
+            <option value="içecek">İçecek</option>
+            <option value="yemek">Yemek</option>
           </select>
-        ) : main === "yemek" ? (
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="select w-full p-2 border border-gray-300 rounded mt-2"
+        </div>
+        {main === "içecek" && (
+          <div className="form-control mb-4">
+            <label className="label text-blue-500 font-bold">
+              Kategori
+            </label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="select select-bordered w-full"
+              required
+            >
+              <option value="a">Kategori Seçiniz</option>
+              <option value="çay">Çaylar</option>
+              <option value="sıcakkahve">
+                Sıcak Kahveler
+              </option>
+              <option value="sogukkahve">
+                Soğuk Kahveler
+              </option>
+            </select>
+          </div>
+        )}
+        {main === "yemek" && (
+          <div className="form-control mb-4">
+            <label className="label text-blue-500 font-bold">
+              Kategori
+            </label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="select select-bordered w-full"
+              required
+            >
+              <option value="a">Kategori Seçiniz</option>
+              <option value="kahvaltı">Kahvaltı</option>
+              <option value="tavuk">Tavuk Yemekleri</option>
+              <option value="aperatif">
+                Atıştırmalıklar
+              </option>
+            </select>
+          </div>
+        )}
+        <div className="form-control mb-4">
+          <label className="label text-blue-500 font-bold">
+            Resim Linki
+          </label>
+          <input
+            type="text"
+            value={image}
+            onChange={(e) => setImage(e.target.value)}
+            placeholder="Resim Link"
+            className="input input-bordered w-full"
             required
-          >
-            <option value="a">Kategori Seçiniz</option>
-            <option value="kahvaltı">Kahvaltı</option>
-            <option value="tavuk">Tavuk Yemekleri</option>
-            <option value="aperatif">
-              Atıştırmalıklar
-            </option>
-          </select>
-        ) : null}
-        <p className="text-blue-500 font-bold ">
-          Resim Linki
-        </p>
-        <input
-          type="text"
-          value={image}
-          onChange={(e) => setImage(e.target.value)}
-          placeholder="Resim Link"
-          className="w-full p-2 border bg-base-100 rounded mt-2"
-          required
-        />
-        <p className="text-blue-500 font-bold ">Açıklama</p>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Açıklama"
-          className="w-full p-2 border bg-base-100 rounded mt-2 h-14"
-          required
-        ></textarea>
-        <p className="text-blue-500 font-bold ">Fiyat</p>
-        <input
-          type="number"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          placeholder="Fiyat"
-          className="w-full p-2 border bg-base-100 rounded mt-2"
-          required
-        />
-        <p className="text-blue-500 font-bold ">
-          Sıra Numarası
-        </p>
-        <input
-          type="number"
-          value={number}
-          onChange={(e) =>
-            setNumber(parseInt(e.target.value))
-          }
-          className="w-full p-2 border bg-base-100 rounded mt-2"
-          required
-        />
+          />
+        </div>
+        <div className="form-control mb-4">
+          <label className="label text-blue-500 font-bold">
+            Açıklama
+          </label>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Açıklama"
+            className="textarea textarea-bordered w-full"
+            required
+          ></textarea>
+        </div>
+        <div className="form-control mb-4">
+          <label className="label text-blue-500 font-bold">
+            Fiyat
+          </label>
+          <input
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="Fiyat"
+            className="input input-bordered w-full"
+            required
+          />
+        </div>
+        <div className="form-control mb-4">
+          <label className="label text-blue-500 font-bold">
+            Sıra Numarası
+          </label>
+          <input
+            type="number"
+            value={number}
+            onChange={(e) =>
+              setNumber(parseInt(e.target.value))
+            }
+            className="input input-bordered w-full"
+            required
+          />
+        </div>
         <button
           type="submit"
-          className="mt-4 bg-base-100 hover:bg-green-500 text-white font-bold py-2 px-4 rounded"
+          className="btn btn-primary w-full"
         >
           KAYDET
         </button>
       </form>
-      <div className="w-1/2">
-        <label className="form-control w-full mt-5">
+      <div className="w-full max-w-xl mb-6">
+        <label className="form-control w-full mb-4">
           <input
             type="text"
             placeholder="Ürün Ara"
-            className="input input-bordered w-full max-w-xs"
+            className="input input-bordered w-full"
+            value={searchTerm}
             onChange={handleSearchChange}
           />
         </label>
-        <ul className="mt-6">
-          {posts
-            .filter(
-              (post: {
-                _id: string;
-                title: string;
-                category: string;
-              }) =>
-                post.category
-                  .toLowerCase()
-                  .includes(searchTerm) ||
-                post.title
-                  .toLowerCase()
-                  .includes(searchTerm)
-            )
-            .map(
-              (post: {
-                category: string;
-                main: string;
-                number: number;
-                _id: string;
-                title: string;
-                image: string;
-                price: string;
-              }) => (
-                <li
-                  key={post._id}
-                  className="flex justify-between items-center bg-gray-100 px-4 py-2 rounded shadow-sm mt-2"
-                >
-                  <span>
-                    <img
-                      src={post.image}
-                      alt={post.title}
-                      className="w-10 h-10 object-cover"
-                    />
-                  </span>
-                  <span className="font-medium">
-                    {post.number}
-                  </span>
-                  <span className="font-medium">
-                    {post.main}
-                  </span>
-                  <span className="font-medium">
-                    {post.category}
-                  </span>
-                  <span className="font-medium">
-                    {post.title}
-                  </span>
-                  <span>{post.price} TL</span>
-                  <div>
-                    <button
-                      onClick={() => startEdit(post)}
-                      className="text-sm bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded mr-2"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => deletePost(post._id)}
-                      className="text-sm bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </li>
+        <ul className="space-y-2">
+          {Array.isArray(posts) &&
+            posts
+              .filter(
+                (post: {
+                  title: string;
+                  category: string;
+                }) =>
+                  (
+                    post.title?.toLowerCase() || ""
+                  ).includes(searchTerm) ||
+                  (
+                    post.category?.toLowerCase() || ""
+                  ).includes(searchTerm)
               )
-            )}
+              .map(
+                (post: {
+                  category: string;
+                  main: string;
+                  number: number;
+                  _id: string;
+                  title: string;
+                  image: string;
+                  price: string;
+                }) => (
+                  <li
+                    key={post._id}
+                    className="flex justify-between items-center bg-white shadow-lg px-4 py-2 rounded-lg"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <img
+                        src={post.image}
+                        alt={post.title}
+                        className="w-12 h-12 object-cover rounded-full hidden md:block"
+                      />
+                      <div className="flex flex-col md:flex-row md:items-center">
+                        <span className="font-medium">
+                          {post.title}
+                        </span>
+                        <span className="hidden md:inline md:ml-4">
+                          {post.main}
+                        </span>
+                        <span className="hidden md:inline md:ml-4">
+                          {post.category}
+                        </span>
+                        <span className="hidden md:inline md:ml-4">
+                          {post.price} TL
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => startEdit(post)}
+                        className="btn btn-warning btn-sm"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deletePost(post._id)}
+                        className="btn btn-error btn-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                )
+              )}
         </ul>
       </div>
     </div>
