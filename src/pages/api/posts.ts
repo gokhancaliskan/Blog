@@ -1,4 +1,3 @@
-// pages/api/posts.ts
 import { MongoClient } from "mongodb";
 import type { NextApiRequest, NextApiResponse } from "next";
 
@@ -30,21 +29,33 @@ async function handler(
         price,
         number,
       } = req.body;
-      const result = await db
+
+      // Check if a post with the same title already exists
+      const existingPost = await db
         .collection("posts")
-        .insertOne({
-          title,
-          main,
-          category,
-          image,
-          content,
-          price,
-          number,
+        .findOne({ title });
+
+      if (existingPost) {
+        res.status(400).json({
+          message: "Bu Ürün Zaten Var!",
         });
-      res.status(201).json({
-        message: "Post added successfully",
-        postId: result.insertedId,
-      });
+      } else {
+        const result = await db
+          .collection("posts")
+          .insertOne({
+            title,
+            main,
+            category,
+            image,
+            content,
+            price,
+            number,
+          });
+        res.status(201).json({
+          message: "Post added successfully",
+          postId: result.insertedId,
+        });
+      }
       break;
 
     default:
@@ -53,6 +64,8 @@ async function handler(
         .status(405)
         .end(`Method ${req.method} Not Allowed`);
   }
+
+  await client.close();
 }
 
 export default handler;

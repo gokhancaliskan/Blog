@@ -1,4 +1,3 @@
-// pages/admin.tsx
 import { useState, useEffect, ReactNode } from "react";
 
 const AdminPage = () => {
@@ -11,14 +10,14 @@ const AdminPage = () => {
   const [content, setContent] = useState("");
   const [price, setPrice] = useState("");
   const [number, setNumber] = useState(0);
+  const [error, setError] = useState<string | null>(null); // Yeni eklenen hata durumu
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetch("/api/posts")
       .then((response) => response.json())
       .then(setPosts);
   }, []);
-
-  const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearchChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -39,13 +38,14 @@ const AdminPage = () => {
 
   const submitHandler = async (event: any) => {
     event.preventDefault();
+    setError(null); // Hata durumunu sıfırlayın
 
     const url = editingPost
       ? `/api/posts/${(editingPost as any)._id}`
       : "/api/posts";
     const method = editingPost ? "PUT" : "POST";
 
-    await fetch(url, {
+    const response = await fetch(url, {
       method,
       body: JSON.stringify({
         title,
@@ -61,16 +61,23 @@ const AdminPage = () => {
       },
     });
 
-    setEditingPost(null);
-    setTitle("");
-    setMain("");
-    setCategory("");
-    setImage("");
-    setContent("");
-    setPrice("");
-    setNumber(number);
+    if (!response.ok) {
+      const data = await response.json();
+      setError(data.message); // Hata mesajını ayarlayın
+    } else {
+      const data = await response.json();
+      setEditingPost(null);
+      setTitle("");
+      setMain("hediyelik");
+      setCategory("");
+      setImage("");
+      setContent("");
+      setPrice("");
+      setNumber(0);
+      setPosts(data); // Yeni post listesini ayarlayın
+    }
   };
-  console.log(main);
+
   const deletePost = async (id: string) => {
     await fetch(`/api/posts/${id}`, { method: "DELETE" });
     setPosts(
@@ -81,16 +88,16 @@ const AdminPage = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
-      <p className="text-blue-500 font-semibold">
-        Menü Ürünler
-      </p>
+    <div className="w-screen h-screen items-center flex p-4 gap-2">
       <form
         onSubmit={submitHandler}
-        className="mt-4 bg-white shadow-md rounded-lg p-4"
+        className="w-1/2 bg-white shadow-md rounded-lg p-4"
       >
-        {" "}
-        <p className="text-blue-500 font-bold ">Ürün Adı</p>
+        {error && <p className="text-red-500">{error}</p>}
+        <p className="text-blue-500 font-bold ">
+          Ürün Adı{" "}
+          {error && <p className="text-red-500">{error}</p>}
+        </p>
         <input
           type="text"
           value={title}
@@ -160,7 +167,7 @@ const AdminPage = () => {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Açıklama"
-          className="w-full p-2 border bg-base-100 rounded mt-2 h-40"
+          className="w-full p-2 border bg-base-100 rounded mt-2 h-14"
           required
         ></textarea>
         <p className="text-blue-500 font-bold ">Fiyat</p>
@@ -191,9 +198,8 @@ const AdminPage = () => {
           KAYDET
         </button>
       </form>
-      <div>
-        <br />
-        <label className="form-control w-full max-w-xs">
+      <div className="w-1/2">
+        <label className="form-control w-full mt-5">
           <input
             type="text"
             placeholder="Ürün Ara"
@@ -201,7 +207,6 @@ const AdminPage = () => {
             onChange={handleSearchChange}
           />
         </label>
-
         <ul className="mt-6">
           {posts
             .filter(
