@@ -89,6 +89,8 @@ const AdminPage = () => {
         onSubmit={submitHandler}
         className="mt-4 bg-white shadow-md rounded-lg p-4"
       >
+        {" "}
+        <p className="text-blue-500 font-bold ">Ürün Adı</p>
         <input
           type="text"
           value={title}
@@ -97,7 +99,10 @@ const AdminPage = () => {
           className="w-full p-2 border bg-base-100 rounded mt-2"
           required
         />
-
+        <br />
+        <p className="text-blue-500 font-bold ">
+          Ürün Tipi
+        </p>
         <select
           value={main}
           onChange={(e) => setMain(e.target.value)}
@@ -105,12 +110,11 @@ const AdminPage = () => {
           required
         >
           <option value="a">Ürün Tipi Seçiniz</option>
-          <option value="drink">İçecek</option>
-          <option value="food">Yemek</option>
-          <option value="gift">Hediyelik</option>
+          <option value="içecek">İçecek</option>
+          <option value="yemek">Yemek</option>
+          <option value="hediyelik">Hediyelik</option>
         </select>
-
-        {main === "drink" ? (
+        {main === "içecek" ? (
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -118,11 +122,15 @@ const AdminPage = () => {
             required
           >
             <option value="a">Kategori Seçiniz</option>
-            <option value="drink">Çaylar</option>
-            <option value="food">Sıcak Kahveler</option>
-            <option value="gift">Soğuk Kahveler</option>
+            <option value="çay">Çaylar</option>
+            <option value="sıcakkahve">
+              Sıcak Kahveler
+            </option>
+            <option value="sogukkahve">
+              Soğuk Kahveler
+            </option>
           </select>
-        ) : main === "food" ? (
+        ) : main === "yemek" ? (
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -137,7 +145,9 @@ const AdminPage = () => {
             </option>
           </select>
         ) : null}
-
+        <p className="text-blue-500 font-bold ">
+          Resim Linki
+        </p>
         <input
           type="text"
           value={image}
@@ -146,6 +156,7 @@ const AdminPage = () => {
           className="w-full p-2 border bg-base-100 rounded mt-2"
           required
         />
+        <p className="text-blue-500 font-bold ">Açıklama</p>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -153,6 +164,7 @@ const AdminPage = () => {
           className="w-full p-2 border bg-base-100 rounded mt-2 h-40"
           required
         ></textarea>
+        <p className="text-blue-500 font-bold ">Fiyat</p>
         <input
           type="number"
           value={price}
@@ -161,6 +173,9 @@ const AdminPage = () => {
           className="w-full p-2 border bg-base-100 rounded mt-2"
           required
         />
+        <p className="text-blue-500 font-bold ">
+          Sıra Numarası
+        </p>
         <input
           type="number"
           value={number}
@@ -191,23 +206,39 @@ const AdminPage = () => {
         <ul className="mt-6">
           {posts
             .filter(
-              (post: { _id: string; title: string }) =>
+              (post: {
+                _id: string;
+                title: string;
+                category: string;
+              }) =>
+                post.category
+                  .toLowerCase()
+                  .includes(searchTerm) ||
                 post.title
                   .toLowerCase()
                   .includes(searchTerm)
             )
             .map(
               (post: {
-                category: ReactNode;
+                category: string;
                 main: string;
                 number: number;
                 _id: string;
                 title: string;
+                image: string;
+                price: string;
               }) => (
                 <li
                   key={post._id}
                   className="flex justify-between items-center bg-gray-100 px-4 py-2 rounded shadow-sm mt-2"
                 >
+                  <span>
+                    <img
+                      src={post.image}
+                      alt={post.title}
+                      className="w-10 h-10 object-cover"
+                    />
+                  </span>
                   <span className="font-medium">
                     {post.number}
                   </span>
@@ -220,6 +251,7 @@ const AdminPage = () => {
                   <span className="font-medium">
                     {post.title}
                   </span>
+                  <span>{post.price} TL</span>
                   <div>
                     <button
                       onClick={() => startEdit(post)}
