@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 const AdminPage = () => {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<any[]>([]);
   const [editingPost, setEditingPost] = useState(null);
   const [title, setTitle] = useState("");
   const [main, setMain] = useState("hediyelik");
