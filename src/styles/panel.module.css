@@ -1,0 +1,31 @@
+.container {
+  display: flex;
+  justify-content: space-around;
+}
+
+.droppableContainer {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+
+  min-height: 300px;
+}
+
+.draggableItem {
+  user-select: none;
+  padding: 16px;
+  margin: 0 0 8px 0;
+  min-height: 50px;
+  border-radius: 5px;
+  background-color: #343a40;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.selectedItem {
+  background-color: #007bff;
+  color: white;
+}

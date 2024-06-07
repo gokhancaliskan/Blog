@@ -13,15 +13,8 @@ async function handler(
   const db = client.db();
 
   if (req.method === "PUT") {
-    const {
-      title,
-      main,
-      category,
-      image,
-      content,
-      price,
-      number,
-    } = req.body;
+    const { title, main, category, image, content, price } =
+      req.body;
     await db.collection("posts").updateOne(
       { _id: new ObjectId(id as string) },
       {
@@ -32,7 +25,6 @@ async function handler(
           image,
           content,
           price,
-          number,
         },
       }
     );

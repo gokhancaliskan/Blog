@@ -27,7 +27,6 @@ async function handler(
         image,
         content,
         price,
-        number,
       } = req.body;
 
       // Check if a post with the same title already exists
@@ -49,7 +48,7 @@ async function handler(
             image,
             content,
             price,
-            number,
+         
           });
         res.status(201).json({
           message: "Post added successfully",

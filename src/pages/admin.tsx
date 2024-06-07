@@ -1,3 +1,4 @@
+import DragDropPanel from "@/components/DragDropPanel";
 import { useState, useEffect } from "react";
 
 const AdminPage = () => {
@@ -6,14 +7,12 @@ const AdminPage = () => {
   const [title, setTitle] = useState("");
   const [main, setMain] = useState("hediyelik");
   const [category, setCategory] = useState("");
-  const [image, setImage] = useState(
-    "https://r.resimlink.com/jz08F76.png"
-  );
+  const [image, setImage] = useState("");
   const [content, setContent] = useState("");
   const [price, setPrice] = useState("");
-  const [number, setNumber] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isEditingMode, setIsEditingMode] = useState(false); // Düzenleme modu
 
   useEffect(() => {
     fetch("/api/posts")
@@ -40,7 +39,6 @@ const AdminPage = () => {
     setImage(post.image);
     setContent(post.content);
     setPrice(post.price);
-    setNumber(post.number);
   };
 
   const submitHandler = async (event: any) => {
@@ -61,7 +59,6 @@ const AdminPage = () => {
         image,
         content,
         price,
-        number,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -80,7 +77,6 @@ const AdminPage = () => {
       setImage("");
       setContent("");
       setPrice("");
-      setNumber(0);
 
       // Burada, mevcut posts durumunu güncelleyip yeni veriyi ekliyoruz.
       setPosts((prevPosts) => {
@@ -151,48 +147,20 @@ const AdminPage = () => {
             <option value="yemek">Yemek</option>
           </select>
         </div>
-        {main === "içecek" && (
-          <div className="form-control mb-4">
-            <label className="label text-blue-500 font-bold">
-              Kategori
-            </label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="select select-bordered w-full"
-              required
-            >
-              <option value="a">Kategori Seçiniz</option>
-              <option value="çay">Çaylar</option>
-              <option value="sıcakkahve">
-                Sıcak Kahveler
-              </option>
-              <option value="sogukkahve">
-                Soğuk Kahveler
-              </option>
-            </select>
-          </div>
-        )}
-        {main === "yemek" && (
-          <div className="form-control mb-4">
-            <label className="label text-blue-500 font-bold">
-              Kategori
-            </label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="select select-bordered w-full"
-              required
-            >
-              <option value="a">Kategori Seçiniz</option>
-              <option value="kahvaltı">Kahvaltı</option>
-              <option value="tavuk">Tavuk Yemekleri</option>
-              <option value="aperatif">
-                Atıştırmalıklar
-              </option>
-            </select>
-          </div>
-        )}
+        <div className="form-control mb-4">
+          <label className="label text-blue-500 font-bold">
+            Kategori
+          </label>
+          <input
+            type="text"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="input input-bordered w-full"
+            required
+            disabled={main === "hediyelik"}
+          />
+        </div>
+
         <div className="form-control mb-4">
           <label className="label text-blue-500 font-bold">
             Resim Linki
@@ -203,7 +171,6 @@ const AdminPage = () => {
             onChange={(e) => setImage(e.target.value)}
             placeholder="Resim Link"
             className="input input-bordered w-full"
-            required
           />
         </div>
         <div className="form-control mb-4">
@@ -231,20 +198,6 @@ const AdminPage = () => {
             required
           />
         </div>
-        <div className="form-control mb-4">
-          <label className="label text-blue-500 font-bold">
-            Sıra Numarası
-          </label>
-          <input
-            type="number"
-            value={number}
-            onChange={(e) =>
-              setNumber(parseInt(e.target.value))
-            }
-            className="input input-bordered w-full"
-            required
-          />
-        </div>
         <button
           type="submit"
           className="btn btn-primary w-full"
@@ -252,6 +205,7 @@ const AdminPage = () => {
           KAYDET
         </button>
       </form>
+      <DragDropPanel />
       <div className="w-full max-w-xl mb-6">
         <label className="form-control w-full mb-4">
           <input
@@ -277,6 +231,7 @@ const AdminPage = () => {
                     post.category?.toLowerCase() || ""
                   ).includes(searchTerm)
               )
+              .sort((a, b) => a.number - b.number) // Sıralama eklendi
               .map(
                 (post: {
                   category: string;
