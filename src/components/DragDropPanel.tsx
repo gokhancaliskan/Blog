@@ -80,7 +80,7 @@ const DragDropPanel: React.FC = () => {
   }, []);
 
   const handleItemClick = async (item: Product) => {
-    if (selectedItem) {
+    if (selectedItem?.category === item.category) {
       // İki öğeyi değiştir
       const updatedSelectedItem = {
         ...selectedItem,
