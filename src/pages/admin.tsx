@@ -145,6 +145,7 @@ const AdminPage = () => {
             <option value="hediyelik">Hediyelik</option>
             <option value="içecek">İçecek</option>
             <option value="yemek">Yemek</option>
+            <option value="tatlı">Tatlı</option>
           </select>
         </div>
         <div className="form-control mb-4">
@@ -182,7 +183,6 @@ const AdminPage = () => {
             onChange={(e) => setContent(e.target.value)}
             placeholder="Açıklama"
             className="textarea textarea-bordered w-full"
-            required
           ></textarea>
         </div>
         <div className="form-control mb-4">
