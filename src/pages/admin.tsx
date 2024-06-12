@@ -3,6 +3,12 @@ import { useState, useEffect } from "react";
 
 const AdminPage = () => {
   const [posts, setPosts] = useState<any[]>([]);
+  const [allCategories, setAllCategories] = useState<{
+    [key: string]: string[];
+  }>({});
+  const [categories, setCategories] = useState<string[]>(
+    []
+  );
   const [editingPost, setEditingPost] = useState(null);
   const [title, setTitle] = useState("");
   const [main, setMain] = useState("hediyelik");
@@ -12,7 +18,10 @@ const AdminPage = () => {
   const [price, setPrice] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isEditingMode, setIsEditingMode] = useState(false); // Düzenleme modu
+  const [isEditingMode, setIsEditingMode] = useState(false);
+  const [isNewCategory, setIsNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] =
+    useState("");
 
   useEffect(() => {
     fetch("/api/posts")
@@ -20,6 +29,22 @@ const AdminPage = () => {
       .then((data) => {
         if (Array.isArray(data)) {
           setPosts(data);
+          const categoryMap: { [key: string]: string[] } =
+            {};
+          data.forEach((post) => {
+            if (!categoryMap[post.main]) {
+              categoryMap[post.main] = [];
+            }
+            if (
+              !categoryMap[post.main].includes(
+                post.category
+              )
+            ) {
+              categoryMap[post.main].push(post.category);
+            }
+          });
+          setAllCategories(categoryMap);
+          setCategories(categoryMap[main] || []);
         } else {
           setError("Beklenmeyen veri yapısı");
         }
@@ -30,6 +55,12 @@ const AdminPage = () => {
         )
       );
   }, []);
+
+  useEffect(() => {
+    setCategories(allCategories[main] || []);
+    setCategory("");
+    setIsNewCategory(false); // Reset new category state when main changes
+  }, [main, allCategories]);
 
   const startEdit = (post: any) => {
     setEditingPost(post);
@@ -45,6 +76,10 @@ const AdminPage = () => {
     event.preventDefault();
     setError(null);
 
+    const finalCategory = isNewCategory
+      ? newCategoryName
+      : category;
+
     const url = editingPost
       ? `/api/posts/${(editingPost as any)._id}`
       : "/api/posts";
@@ -55,7 +90,7 @@ const AdminPage = () => {
       body: JSON.stringify({
         title,
         main,
-        category,
+        category: finalCategory,
         image,
         content,
         price,
@@ -77,21 +112,33 @@ const AdminPage = () => {
       setImage("");
       setContent("");
       setPrice("");
+      setIsNewCategory(false);
+      setNewCategoryName("");
 
-      // Burada, mevcut posts durumunu güncelleyip yeni veriyi ekliyoruz.
       setPosts((prevPosts) => {
         if (editingPost) {
-          // Mevcut bir gönderiyi düzenliyorsanız, güncellenmiş gönderiyi diziye ekleyin.
           return prevPosts.map((post) =>
             post._id === (editingPost as any)._id
               ? data
               : post
           );
         } else {
-          // Yeni bir gönderi ekliyorsanız, yeni gönderiyi diziye ekleyin.
           return [...prevPosts, data];
         }
       });
+
+      if (
+        isNewCategory &&
+        !categories.includes(newCategoryName)
+      ) {
+        setAllCategories((prevCategories) => ({
+          ...prevCategories,
+          [main]: [
+            ...(prevCategories[main] || []),
+            newCategoryName,
+          ],
+        }));
+      }
     }
   };
 
@@ -152,16 +199,64 @@ const AdminPage = () => {
           <label className="label text-blue-500 font-bold">
             Kategori
           </label>
-          <input
-            type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="input input-bordered w-full"
-            required
-            disabled={main === "hediyelik"}
-          />
+          {isNewCategory ? (
+            <>
+              <input
+                type="text"
+                value={newCategoryName}
+                onChange={(e) =>
+                  setNewCategoryName(e.target.value)
+                }
+                placeholder="Yeni Kategori Adı"
+                className="input input-bordered w-full"
+                required
+              />
+              <button
+                type="button"
+                className="btn btn-secondary mt-2"
+                onClick={() => {
+                  setIsNewCategory(false);
+                  setNewCategoryName("");
+                }}
+              >
+                İptal
+              </button>
+            </>
+          ) : (
+            <select
+              value={category}
+              onChange={(e) => {
+                if (e.target.value === "new-category") {
+                  setIsNewCategory(true);
+                } else {
+                  setCategory(e.target.value);
+                }
+              }}
+              className="select select-bordered w-full"
+              required
+            >
+              <option value="" disabled hidden>
+                Kategori Seçin
+              </option>
+              {categories.length === 0 ? (
+                <option value="new-category">
+                  Yeni Kategori Oluştur
+                </option>
+              ) : (
+                <>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                  <option value="new-category">
+                    Yeni Kategori Oluştur
+                  </option>
+                </>
+              )}
+            </select>
+          )}
         </div>
-
         <div className="form-control mb-4">
           <label className="label text-blue-500 font-bold">
             Resim Linki
@@ -231,7 +326,7 @@ const AdminPage = () => {
                     post.category?.toLowerCase() || ""
                   ).includes(searchTerm)
               )
-              .sort((a, b) => a.number - b.number) // Sıralama eklendi
+              .sort((a, b) => a.number - b.number)
               .map(
                 (post: {
                   category: string;
