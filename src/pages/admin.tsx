@@ -193,6 +193,7 @@ const AdminPage = () => {
             <option value="içecek">İçecek</option>
             <option value="yemek">Yemek</option>
             <option value="tatlı">Tatlı</option>
+            <option value="nargile">Nargile</option>
           </select>
         </div>
         <div className="form-control mb-4">
