@@ -210,7 +210,6 @@ const AdminPage = () => {
                 }
                 placeholder="Yeni Kategori Adı"
                 className="input input-bordered w-full"
-                required
               />
               <button
                 type="button"
